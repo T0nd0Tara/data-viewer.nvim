@@ -105,7 +105,15 @@ M.create_bufs = function(tablesData)
   for tableName, tableData in pairs(tablesData) do
     local buf = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, tableData.formatedLines)
-    vim.api.nvim_buf_set_option(buf, "modifiable", false)
+    vim.api.nvim_buf_set_option(buf, "modifiable", config.config.modifiable)
+    if config.config.modifiable then
+      vim.api.nvim_create_autocmd({"TextChanged", "TextChangedI"}, {
+        buffer = buf,
+        callback = function(ev) 
+          vim.api.nvim_buf_set_lines(buf, 0, -1, false, tableData.formatedLines)
+        end
+      })
+    end
     vim.api.nvim_buf_set_name(buf, "DataViwer-" .. tableName)
     vim.api.nvim_buf_set_keymap(buf, "n", config.config.keymap.next_table, ":DataViewerNextTable<CR>", KEYMAP_OPTS)
     vim.api.nvim_buf_set_keymap(buf, "n", config.config.keymap.prev_table, ":DataViewerPrevTable<CR>", KEYMAP_OPTS)

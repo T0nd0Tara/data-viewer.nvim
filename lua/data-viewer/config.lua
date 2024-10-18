@@ -32,6 +32,7 @@ local DefaultConfig = {
   maxLineEachTable = 100,
   columnColorEnable = true,
   columnColorRoulette = { "DataViewerColumn0", "DataViewerColumn1", "DataViewerColumn2" },
+  modifiable = false,
   view = ViewConfig,
   keymap = KeymapConfig,
 }

@@ -54,10 +54,11 @@ M.start = function(opts)
   local headerStr, headerInfo = module.get_win_header_str(parsedData)
   for tableName, tableData in pairs(parsedData) do
     parsedData[tableName]["colMaxWidth"] = module.get_max_width(tableData.headers, tableData.bodyLines)
-    parsedData[tableName]["formatedLines"] = utils.merge_array(
-      { headerStr },
-      module.format_lines(tableData.headers, tableData.bodyLines, tableData["colMaxWidth"])
-    )
+
+    
+    local formatedLines = module.format_lines(tableData.headers, tableData.bodyLines, tableData["colMaxWidth"])
+    parsedData[tableName]["formatedLines"] = utils.merge_array( { headerStr }, formatedLines)
+    parsedData[tableName]["width"] = #formatedLines[1]
   end
 
   local first_bufnum = -1
@@ -65,7 +66,7 @@ M.start = function(opts)
 
   M.parsed_data = parsedData
   M.header_info = headerInfo
-  M.win_id = module.open_win { first_bufnum, opts.force_replace }
+  M.win_id = module.open_win(first_bufnum, opts.force_replace)
 
   for _, header in ipairs(M.header_info) do
     local bufnum = parsedData[header.name].bufnum

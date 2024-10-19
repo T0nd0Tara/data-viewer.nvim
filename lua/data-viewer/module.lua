@@ -78,6 +78,7 @@ end
 ---@param header string[]
 ---@param lines table<string, string>[]
 ---@param colMaxWidth table<string, number>
+---@return string[]
 M.format_lines = function(header, lines, colMaxWidth)
   local formatedHeader = M.format_header(header, colMaxWidth)
   local formatedBody = M.format_body(lines, header, colMaxWidth)
@@ -105,6 +106,12 @@ M.create_bufs = function(tablesData)
   for tableName, tableData in pairs(tablesData) do
     local buf = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, tableData.formatedLines)
+
+    if config.config.view.float then
+      vim.api.nvim_buf_set_option(buf, "columns", tableData.width)
+      vim.api.nvim_buf_set_option(buf, "lines",   #tableData.bodyLines + 2)
+    end
+
     vim.api.nvim_buf_set_option(buf, "modifiable", config.config.modifiable)
     if config.config.modifiable then
       vim.api.nvim_create_autocmd({"TextChanged", "TextChangedI"}, {
@@ -114,6 +121,7 @@ M.create_bufs = function(tablesData)
         end
       })
     end
+
     vim.api.nvim_buf_set_name(buf, "DataViwer-" .. tableName)
     vim.api.nvim_buf_set_keymap(buf, "n", config.config.keymap.next_table, ":DataViewerNextTable<CR>", KEYMAP_OPTS)
     vim.api.nvim_buf_set_keymap(buf, "n", config.config.keymap.prev_table, ":DataViewerPrevTable<CR>", KEYMAP_OPTS)
@@ -129,10 +137,7 @@ end
 ---@tparam buf_id number
 ---@tparam force_replace boolean
 ---@return number
-M.open_win = function(opts)
-  local buf_id = opts[1]
-  local force_replace = opts[2]
-
+M.open_win = function(buf_id, force_replace)
   if not config.config.view.float or force_replace then
     local win = vim.api.nvim_get_current_win()
     vim.api.nvim_buf_set_option(buf_id, "buflisted", true)
@@ -146,8 +151,8 @@ M.open_win = function(opts)
   local width = math.max(1, math.floor(screenWidth * config.config.view.width))
   local win = vim.api.nvim_open_win(buf_id, true, {
     relative = "win",
-    width = width,
-    height = height,
+    -- width = width,
+    -- height = height,
     row = math.max(1, math.floor((screenHeight - height) / 2)),
     col = math.max(1, math.floor((screenWidth - width) / 2)),
     style = "minimal",

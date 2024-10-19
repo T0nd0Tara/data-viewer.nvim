@@ -1,6 +1,7 @@
 local parsers = require("data-viewer.parser.parsers")
 local utils = require("data-viewer.utils")
 local config = require("data-viewer.config")
+local json = require("json")
 
 local KEYMAP_OPTS = { noremap = true, silent = true }
 
@@ -98,6 +99,38 @@ M.get_win_header_str = function(tablesData)
   return header, pos
 end
 
+---@param line string
+---@return string
+M.is_line_decoration = function (line)
+  local checkingStr = string.rep("─", utils.getStringDisplayLength(formatedLines[1]) - 2)
+  return true
+end
+
+---@param lines string[]
+---@return string[]
+M.clean_headers = function(lines)
+  local headers_row
+
+  
+end
+
+---@param tablesData table<string, any>
+---@param lines string[]
+---@return string[]
+M.clean_table = function(tableData, lines)
+  -- TODO
+  return tableData.formatedLines
+  -- You cannot edit the header string
+  -- if tableData.formatedLines[1] ~= lines[1] then
+  --   return tableData.formatedLines
+  -- end
+  --
+  -- local actualTable = table.unpack(lines, 2)
+  --
+  -- local newHeaders = clean_headers(actualTable)
+  -- return tableData.formatedLines
+end
+
 ---@param tablesData table<string, any>
 ---@return number, table<string, any>
 M.create_bufs = function(tablesData)
@@ -109,11 +142,13 @@ M.create_bufs = function(tablesData)
     if config.config.modifiable then
       vim.api.nvim_create_autocmd({"TextChanged", "TextChangedI"}, {
         buffer = buf,
-        callback = function(ev) 
-          vim.api.nvim_buf_set_lines(buf, 0, -1, false, tableData.formatedLines)
+        callback = function(ev)
+          local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+          vim.api.nvim_buf_set_lines(buf, 0, -1, false, M.clean_table(tableData, lines))
         end
       })
     end
+          vim.api.nvim_buf_set_lines(buf, 0, -1, false, tableData.formatedLines)
     vim.api.nvim_buf_set_name(buf, "DataViwer-" .. tableName)
     vim.api.nvim_buf_set_keymap(buf, "n", config.config.keymap.next_table, ":DataViewerNextTable<CR>", KEYMAP_OPTS)
     vim.api.nvim_buf_set_keymap(buf, "n", config.config.keymap.prev_table, ":DataViewerPrevTable<CR>", KEYMAP_OPTS)
